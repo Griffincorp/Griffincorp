@@ -291,6 +291,9 @@
                 alert('Please check the box to agree to the terms and risk warnings before proceeding.');
                 return;
             }
+            // Set session authorization token so analytics.html recognizes access
+            sessionStorage.setItem('griffincorp_authorized', 'true');
+
             document.getElementById('splashScreen').classList.add('hidden');
             document.getElementById('mainPlatform').classList.remove('hidden');
             window.scrollTo(0, 0);
