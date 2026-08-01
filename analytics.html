@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Griffincorp | Project Genesis Analytics & Telemetry</title>
+    <!-- Gateway Shield: Redirects directly back to home if user bypassed the splash screen -->
+    <script>
+        if (!sessionStorage.getItem('griffincorp_authorized')) {
+            window.location.href = 'index.html';
+        }
+    </script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN for Graphs & Pie Charts -->
@@ -233,7 +239,7 @@
                     document.getElementById('metric-status').className = "text-3xl font-extrabold text-accent font-mono mb-1";
                 }
 
-                // 2. Update Equity Line Chart Data (expects data.timestamps & data.equityHistory arrays)
+                // 2. Update Equity Line Chart Data
                 if (data.timestamps && data.equityHistory) {
                     equityChart.data.labels = data.timestamps;
                     equityChart.data.datasets[0].data = data.equityHistory;
@@ -246,7 +252,7 @@
                     winLossChart.update();
                 }
 
-                // 4. Update Detailed Trade Log Table (expects data.trades array)
+                // 4. Update Detailed Trade Log Table
                 if (data.trades && data.trades.length > 0) {
                     let tableBody = document.getElementById('trade-log-body');
                     tableBody.innerHTML = '';
