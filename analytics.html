@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Griffincorp | Project Genesis Analytics & Telemetry</title>
-    <!-- Gateway Shield: Redirects directly back to home if user bypassed the splash screen -->
+    <!-- Gateway Shield: Redirects to index.html if terms weren't accepted -->
     <script>
         if (!sessionStorage.getItem('griffincorp_authorized')) {
             window.location.href = 'index.html';
@@ -12,7 +12,7 @@
     </script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN for Graphs & Pie Charts -->
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = {
@@ -31,7 +31,6 @@
 </head>
 <body class="bg-darkbg text-gray-100 font-sans antialiased selection:bg-accent selection:text-white">
 
-    <!-- Header / Navigation -->
     <header class="sticky top-0 z-50 bg-darkbg/85 backdrop-blur-md border-b border-gray-800">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -52,10 +51,7 @@
         </div>
     </header>
 
-    <!-- Main Analytics Container -->
     <main class="max-w-7xl mx-auto px-6 py-10 space-y-8">
-        
-        <!-- Page Title & Overview Bar -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-cardbg border border-gray-800 p-6 rounded-2xl shadow-xl">
             <div>
                 <div class="text-xs uppercase tracking-widest text-accent font-mono mb-1">Quantitative Telemetry Engine</div>
@@ -73,7 +69,6 @@
             </div>
         </div>
 
-        <!-- Key Metrics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 shadow-lg">
                 <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Account Equity</div>
@@ -97,9 +92,7 @@
             </div>
         </div>
 
-        <!-- CHARTS SECTION: Line Graph & Pie Chart -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Line Graph Card -->
             <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 shadow-xl lg:col-span-2 flex flex-col">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-white">Equity & Performance Curve</h2>
@@ -110,7 +103,6 @@
                 </div>
             </div>
 
-            <!-- Win/Loss Pie Chart Card -->
             <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 shadow-xl flex flex-col">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-white">Win / Loss Ratio</h2>
@@ -122,7 +114,6 @@
             </div>
         </div>
 
-        <!-- DETAILED TRADE LOG TABLE -->
         <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 md:p-8 shadow-xl">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
@@ -152,10 +143,8 @@
                 </table>
             </div>
         </div>
-
     </main>
 
-    <!-- Footer -->
     <footer class="border-t border-gray-800 py-12 bg-cardbg/50 mt-16">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
             <p class="text-sm text-gray-500">&copy; 2026 Griffincorp. All rights reserved.</p>
@@ -166,9 +155,7 @@
         </div>
     </footer>
 
-    <!-- LIVE TELEMETRY BRIDGE & CHARTS SCRIPT -->
     <script>
-        // Initialize Chart.js Graphs
         const ctxEquity = document.getElementById('equityChart').getContext('2d');
         const equityChart = new Chart(ctxEquity, {
             type: 'line',
@@ -215,14 +202,12 @@
             }
         });
 
-        // Live Fetch & Update Loop
         async function fetchLiveTelemetry() {
             try {
                 let response = await fetch('telemetry.json');
                 if (!response.ok) return;
                 let data = await response.json();
 
-                // 1. Update Top Metrics Cards
                 document.getElementById('metric-equity').innerText = "$" + data.equity.toFixed(2);
                 document.getElementById('metric-profit').innerText = "$" + data.floatingProfit.toFixed(2);
                 
@@ -239,20 +224,17 @@
                     document.getElementById('metric-status').className = "text-3xl font-extrabold text-accent font-mono mb-1";
                 }
 
-                // 2. Update Equity Line Chart Data
                 if (data.timestamps && data.equityHistory) {
                     equityChart.data.labels = data.timestamps;
                     equityChart.data.datasets[0].data = data.equityHistory;
                     equityChart.update();
                 }
 
-                // 3. Update Win/Loss Pie Chart Data
                 if (data.winningTrades !== undefined && data.losingTrades !== undefined) {
                     winLossChart.data.datasets[0].data = [data.winningTrades, data.losingTrades];
                     winLossChart.update();
                 }
 
-                // 4. Update Detailed Trade Log Table
                 if (data.trades && data.trades.length > 0) {
                     let tableBody = document.getElementById('trade-log-body');
                     tableBody.innerHTML = '';
@@ -269,13 +251,11 @@
                         tableBody.innerHTML += row;
                     });
                 }
-
             } catch (error) {
                 console.log("Awaiting local MT5 telemetry bridge feed...");
             }
         }
 
-        // Poll every 1 second
         setInterval(fetchLiveTelemetry, 1000);
     </script>
 </body>
