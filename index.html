@@ -275,6 +275,14 @@
 
     <!-- JavaScript Controllers -->
     <script>
+        // Ensure page always starts on splash screen when loaded/refreshed
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('splashScreen').classList.remove('hidden');
+            document.getElementById('mainPlatform').classList.add('hidden');
+            const checkbox = document.getElementById('termsCheck');
+            if (checkbox) checkbox.checked = false;
+        });
+
         function enterPlatform() {
             const checkbox = document.getElementById('termsCheck');
             if (!checkbox.checked) {
