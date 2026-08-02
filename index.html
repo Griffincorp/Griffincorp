@@ -31,7 +31,7 @@
 <body class="bg-darkbg text-gray-100 font-sans antialiased selection:bg-accent selection:text-white">
 
     <!-- ========================================== -->
-    <!-- SPLASH & STRICT TERMS GATEWAY             -->
+    <!-- SPLASH & STRICT TERMS GATEWAY            -->
     <!-- ========================================== -->
     <div id="splashScreen" class="fixed inset-0 z-50 bg-darkbg flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-cardbg border border-gray-800 rounded-3xl p-6 sm:p-8 md:p-10 max-w-2xl w-full text-center shadow-2xl relative my-auto">
@@ -143,7 +143,7 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- LIVE TRADE COPY STREAM (DYNAMIC FEED)     -->
+        <!-- LIVE TRADE COPY STREAM (DYNAMIC FEED)    -->
         <!-- ========================================== -->
         <section id="signalStream" class="py-16 sm:py-20 bg-cardbg/20 border-t border-gray-800">
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
@@ -281,7 +281,7 @@
                             </div>
 
                             <button type="submit" class="w-full bg-accent hover:bg-emerald-600 text-darkbg font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-accent/20 mt-2 cursor-pointer">
-                                Proceed to Secure Checkout &rarr;
+                                Proceed to Secure Multi-Rail Checkout &rarr;
                             </button>
                         </form>
                     </div>
@@ -298,7 +298,7 @@
                             </div>
                             <div class="bg-darkbg p-3.5 rounded-xl border border-gray-800/80">
                                 <strong class="text-white block mb-1 font-semibold">2. Investor Account Flow:</strong>
-                                Users choose their project target, clear the required activation fee via the paywall, and route directly to the institutional desk for secure PAMM/MAM account linking.
+                                Users choose their project target, choose their preferred payment rail (International Cards, Local M-Pesa, or Crypto), and route directly to complete secure deposit processing.
                             </div>
                         </div>
                     </div>
@@ -349,8 +349,6 @@
 
         // Function to check and render live signals from MT5 / backend feed
         function checkLiveSignalStream() {
-            // In a production environment, this fetches from your backend API connected to MT5.
-            // For now, we simulate an empty active trade array (returns [] when no active trades exist).
             const activeTrades = []; // Set this to an array of objects when trades are live
 
             const loadingState = document.getElementById('signalLoadingState');
@@ -358,17 +356,13 @@
             const statusText = document.getElementById('feedStatusText');
 
             if (activeTrades.length === 0) {
-                // No active trades: show loading/standby state, hide grid
                 loadingState.classList.remove('hidden');
                 activeGrid.classList.add('hidden');
                 statusText.innerText = "Gateway Idle: Standby for Triggers";
             } else {
-                // Active trades exist: hide loading state, render grid
                 loadingState.classList.add('hidden');
                 activeGrid.classList.remove('hidden');
                 statusText.innerText = "Active Feed Synchronized";
-
-                // Render cards logic here if activeTrades has data...
             }
         }
 
@@ -406,12 +400,14 @@
             document.getElementById('priceDisplay').innerText = `${symbol}${formattedPrice} ${currency}`;
         }
 
+        // Integrated Multi-Rail Checkout Function (Stripe, Paystack/M-Pesa, Crypto)
         function handleInvestorCheckout(event) {
             event.preventDefault();
             const name = document.getElementById('invName').value;
             const email = document.getElementById('invEmail').value;
             const select = document.getElementById('invProject');
             const projectName = select.options[select.selectedIndex].text;
+            const projectKey = select.value; // 'genesis', 'protector', 'custom'
             const price = select.options[select.selectedIndex].getAttribute('data-price');
             const currency = select.options[select.selectedIndex].getAttribute('data-currency') || 'USD';
 
@@ -419,7 +415,55 @@
             if (currency === "EUR") symbol = "€";
             else if (currency === "GBP") symbol = "£";
 
-            alert(`Initializing Secure Checkout for ${name}!\nSelected Project: ${projectName}\nAmount Required: ${symbol}${Number(price).toLocaleString()} ${currency}\n\n[Connecting to International Payment Gateway (Stripe / Multi-Currency Processor)...]`);
+            // Present multi-rail gateway choice modal
+            const gatewayChoice = prompt(
+                `GRIFFINCORP SECURED CHECKOUT\n` +
+                `Investor: ${name}\n` +
+                `Project: ${projectName}\n` +
+                `Amount: ${symbol}${Number(price).toLocaleString()} ${currency}\n\n` +
+                `Select Preferred Payment Rail:\n` +
+                `1. International Cards (Stripe - USD/EUR/GBP)\n` +
+                `2. Local & M-Pesa (Paystack / Flutterwave)\n` +
+                `3. Cryptocurrency (USDT / Crypto Gateway)\n\n` +
+                `Type 1, 2, or 3 to proceed:`
+            );
+
+            if (gatewayChoice === "1") {
+                // Replace with your actual Stripe Payment Links / API endpoints
+                const stripeLinks = {
+                    'genesis': 'https://buy.stripe.com/your_stripe_genesis_link',
+                    'protector': 'https://buy.stripe.com/your_stripe_protector_link',
+                    'custom': 'https://buy.stripe.com/your_stripe_custom_link'
+                };
+                const targetUrl = stripeLinks[projectKey];
+                if (targetUrl && !targetUrl.includes('your_stripe')) {
+                    window.location.href = `${targetUrl}?prefilled_email=${encodeURIComponent(email)}`;
+                } else {
+                    alert(`[Stripe Simulation]\nRedirecting ${name} to International Card Gateway for ${projectName} (${symbol}${Number(price).toLocaleString()}).`);
+                }
+
+            } else if (gatewayChoice === "2") {
+                // Replace with your actual Paystack / Flutterwave payment page links
+                const localPayLinks = {
+                    'genesis': 'https://paystack.com/pay/your_local_genesis_link',
+                    'protector': 'https://paystack.com/pay/your_local_protector_link',
+                    'custom': 'https://paystack.com/pay/your_local_custom_link'
+                };
+                const targetUrl = localPayLinks[projectKey];
+                if (targetUrl && !targetUrl.includes('your_local')) {
+                    window.location.href = targetUrl;
+                } else {
+                    alert(`[Paystack / M-Pesa Simulation]\nRedirecting ${name} to Local Mobile Money / Bank Transfer Gateway for ${projectName}.`);
+                }
+
+            } else if (gatewayChoice === "3") {
+                // Crypto payment processing channel
+                alert(`[Crypto Gateway]\nInitializing secure USDT / BTC deposit session for ${name} (${projectName}).\nRedirecting to stablecoin settlement handler...`);
+                window.location.href = `crypto-checkout.html?project=${projectKey}&email=${encodeURIComponent(email)}&amount=${price}`;
+
+            } else if (gatewayChoice !== null) {
+                alert("Invalid selection. Please choose 1, 2, or 3.");
+            }
         }
 
         function copyTradeAlert(symbol, action, entry, sl, tp) {
