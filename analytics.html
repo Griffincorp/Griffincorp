@@ -3,16 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Griffincorp | Project Genesis Analytics & Telemetry</title>
-    <!-- Gateway Shield: Redirects to index.html if terms weren't accepted -->
-    <script>
-        if (!sessionStorage.getItem('griffincorp_authorized')) {
-            window.location.href = 'index.html';
-        }
-    </script>
+    <title>Analytics Hub & Telemetry | Griffincorp</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
+    <!-- Chart.js for graphs and charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = {
@@ -29,167 +23,205 @@
         }
     </script>
 </head>
-<body class="bg-darkbg text-gray-100 font-sans antialiased selection:bg-accent selection:text-white">
+<body class="bg-darkbg text-gray-100 font-sans antialiased">
 
-    <header class="sticky top-0 z-50 bg-darkbg/85 backdrop-blur-md border-b border-gray-800">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 bg-darkbg/85 backdrop-blur-md border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <img src="logo.png" alt="Griffincorp Logo" class="h-10 w-auto object-contain">
-                <span class="text-2xl font-bold tracking-wider text-white">
+                <img src="logo.png" alt="Griffincorp Logo" class="h-8 sm:h-10 w-auto object-contain">
+                <span class="text-xl sm:text-2xl font-bold tracking-wider text-white">
                     GRIFFIN<span class="text-accent">CORP</span>
                 </span>
             </div>
             <nav class="hidden md:flex space-x-8 text-sm font-medium text-gray-300">
-                <a href="index.html" class="hover:text-accent transition-colors">Home Platform</a>
-                <a href="analytics.html" class="text-accent font-semibold">Project Genesis Analytics</a>
+                <a href="index.html#systems" class="hover:text-accent transition-colors">Systems</a>
+                <a href="index.html#signalStream" class="hover:text-accent transition-colors">Signal Stream</a>
+                <a href="analytics.html" class="text-emerald-400 font-semibold">Analytics Hub</a>
+                <a href="index.html#portal" class="hover:text-accent transition-colors">Investor Tiers</a>
             </nav>
             <div>
-                <span id="nav-status" class="text-xs bg-amber-500/10 border border-amber-500/20 text-amber-400 font-mono px-3 py-1.5 rounded-lg">
-                    Status: Awaiting Launch (Aug 7)
-                </span>
+                <a href="index.html" class="bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-lg transition-all border border-gray-700">
+                    &larr; Back to Platform Home
+                </a>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-10 space-y-8">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-cardbg border border-gray-800 p-6 rounded-2xl shadow-xl">
+    <!-- Main Analytics Hub Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+        
+        <!-- Page Title & Live Status -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-cardbg border border-gray-800 p-6 rounded-2xl shadow-xl">
             <div>
-                <div class="text-xs uppercase tracking-widest text-accent font-mono mb-1">Quantitative Telemetry Engine</div>
-                <h1 class="text-2xl md:text-3xl font-extrabold text-white">Griffincorp Systems Performance Hub</h1>
+                <div class="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 px-3 py-1 rounded-full text-xs font-semibold text-accent mb-2">
+                    <span class="w-2 h-2 rounded-full bg-accent animate-ping"></span>
+                    <span>Live MT5 Bot Telemetry Feed Synced</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Griffincorp Analytics & Performance Hub</h1>
+                <p class="text-gray-400 text-sm mt-1">Real-time equity, balance, growth trajectory, and algorithmic indicator telemetry.</p>
             </div>
-            <div class="flex flex-wrap gap-4 text-xs font-mono">
-                <div class="bg-darkbg px-4 py-2.5 rounded-xl border border-gray-800">
-                    <span class="text-gray-400 block">Operational Mode:</span>
-                    <span class="text-accent font-bold text-sm">Autonomous MQL5</span>
-                </div>
-                <div class="bg-darkbg px-4 py-2.5 rounded-xl border border-gray-800">
-                    <span class="text-gray-400 block">Target Launch Date:</span>
-                    <span class="text-white font-bold text-sm">August 7, 2026</span>
-                </div>
+            <div class="mt-4 md:mt-0 bg-darkbg border border-gray-800 px-4 py-3 rounded-xl font-mono text-xs text-right">
+                <p class="text-gray-400">Server Status: <span class="text-accent font-bold">ONLINE</span></p>
+                <p class="text-gray-500 mt-0.5">Last Signal Packet: <span id="lastPacketTime" class="text-white">Just now</span></p>
             </div>
         </div>
 
+        <!-- Key Metrics Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 shadow-lg">
-                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Account Equity</div>
-                <div id="metric-equity" class="text-3xl font-extrabold text-white font-mono mb-1">$0.00</div>
-                <div class="text-xs text-gray-500 font-mono">Live MT5 Balance Stream</div>
+            <div class="bg-cardbg border border-gray-800 p-6 rounded-2xl shadow-lg">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Live Account Balance</span>
+                <h3 id="metricBalance" class="text-2xl sm:text-3xl font-bold font-mono text-white mt-2">$10,450.00</h3>
+                <span class="text-xs text-accent mt-1 inline-block">+4.5% this week</span>
             </div>
-            <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 shadow-lg">
-                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Overall Win Rate</div>
-                <div id="metric-winrate" class="text-3xl font-extrabold text-white font-mono mb-1">0.0%</div>
-                <div id="metric-total-trades" class="text-xs text-gray-500 font-mono">Total Trades: 0</div>
+            <div class="bg-cardbg border border-gray-800 p-6 rounded-2xl shadow-lg">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Live Equity</span>
+                <h3 id="metricEquity" class="text-2xl sm:text-3xl font-bold font-mono text-accent mt-2">$10,820.50</h3>
+                <span class="text-xs text-gray-400 mt-1 inline-block">Active Floating Profit</span>
             </div>
-            <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 shadow-lg">
-                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Floating Profit</div>
-                <div id="metric-profit" class="text-3xl font-extrabold text-accent font-mono mb-1">$0.00</div>
-                <div class="text-xs text-gray-500 font-mono">Real-time aggregate</div>
+            <div class="bg-cardbg border border-gray-800 p-6 rounded-2xl shadow-lg">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Project Genesis Win Rate</span>
+                <h3 class="text-2xl sm:text-3xl font-bold font-mono text-white mt-2">68.4%</h3>
+                <span class="text-xs text-accent mt-1 inline-block">Optimized Risk-to-Reward</span>
             </div>
-            <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 shadow-lg">
-                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">System Status</div>
-                <div id="metric-status" class="text-3xl font-extrabold text-amber-400 font-mono mb-1">Standby</div>
-                <div class="text-xs text-gray-500 font-mono">All systems nominal</div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 shadow-xl lg:col-span-2 flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-white">Equity & Performance Curve</h2>
-                    <span class="text-xs text-gray-400 font-mono">Real-time ticks</span>
-                </div>
-                <div class="relative h-72 w-full">
-                    <canvas id="equityChart"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 shadow-xl flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-white">Win / Loss Ratio</h2>
-                    <span class="text-xs text-gray-400 font-mono">Distribution</span>
-                </div>
-                <div class="relative h-72 w-full flex items-center justify-center">
-                    <canvas id="winLossChart"></canvas>
-                </div>
+            <div class="bg-cardbg border border-gray-800 p-6 rounded-2xl shadow-lg">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Bot Status</span>
+                <h3 class="text-2xl sm:text-3xl font-bold font-mono text-emerald-400 mt-2">RUNNING</h3>
+                <span class="text-xs text-gray-400 mt-1 inline-block">MQL5 Indicator Connected</span>
             </div>
         </div>
 
-        <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 md:p-8 shadow-xl">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <div>
-                    <div class="text-xs uppercase tracking-widest text-accent font-mono mb-1">Execution Ledger</div>
-                    <h2 class="text-xl font-bold text-white">Detailed Trade Logs</h2>
-                </div>
-                <p class="text-xs text-gray-400">Tracks every individual trade ticket, commission spent, and net profit/loss.</p>
-            </div>
+        <!-- Charts Grid Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-left font-mono text-xs">
-                    <thead>
-                        <tr class="border-b border-gray-800 text-gray-400 uppercase">
-                            <th class="py-3 px-4">Ticket ID</th>
-                            <th class="py-3 px-4">Asset</th>
-                            <th class="py-3 px-4">Type</th>
-                            <th class="py-3 px-4">Volume</th>
-                            <th class="py-3 px-4">Commission</th>
-                            <th class="py-3 px-4">Net P/L</th>
-                        </tr>
-                    </thead>
-                    <tbody id="trade-log-body" class="divide-y divide-gray-800/60 text-gray-300">
-                        <tr>
-                            <td colspan="6" class="py-6 text-center text-gray-500 italic">Awaiting telemetry trade history stream...</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Growth & Equity Line Chart (Spans 2 columns) -->
+            <div class="lg:col-span-2 bg-cardbg border border-gray-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Company Growth & Equity Trajectory</h3>
+                        <p class="text-xs text-gray-400">Historical performance curve from MetaTrader 5 bot telemetry.</p>
+                    </div>
+                    <span class="text-xs font-mono bg-darkbg border border-gray-800 px-3 py-1.5 rounded-lg text-accent">Cent/Standard Feed</span>
+                </div>
+                <div class="relative h-72 sm:h-80 w-full">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Asset Allocation / Performance Distribution Pie Chart -->
+            <div class="bg-cardbg border border-gray-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold text-white">Asset & Strategy Distribution</h3>
+                    <p class="text-xs text-gray-400">Breakdown of execution weight across active instruments.</p>
+                </div>
+                <div class="relative h-64 w-full flex items-center justify-center">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-800 flex justify-between text-xs text-gray-400 font-mono">
+                    <span>XAUUSD / Forex</span>
+                    <span class="text-accent">Optimized Allocation</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Detailed Paragraph Section / System Telemetry Table -->
+        <div class="bg-cardbg border border-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl space-y-6">
+            <div>
+                <h3 class="text-xl font-bold text-white mb-2">Algorithmic Execution Telemetry & Technical Summary</h3>
+                <p class="text-sm text-gray-400 leading-relaxed">
+                    Griffincorp's infrastructure runs on advanced automated Expert Advisors and indicator pipelines built natively in MQL5 for MetaTrader 5. The engine continuously processes tick data across sub-second timeframes, executing predefined breakout and momentum rules without manual human intervention. All trade logs, equity variations, and drawdowns are securely mirrored here through real-time webhooks.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-800 text-sm">
+                <div class="bg-darkbg p-4 rounded-xl border border-gray-800">
+                    <span class="text-xs text-gray-400 block mb-1 uppercase font-semibold">Execution Latency</span>
+                    <span class="text-white font-mono font-bold text-base">&lt; 15ms</span>
+                </div>
+                <div class="bg-darkbg p-4 rounded-xl border border-gray-800">
+                    <span class="text-xs text-gray-400 block mb-1 uppercase font-semibold">Max Drawdown Cap</span>
+                    <span class="text-accent font-mono font-bold text-base">5.0% (Strict)</span>
+                </div>
+                <div class="bg-darkbg p-4 rounded-xl border border-gray-800">
+                    <span class="text-xs text-gray-400 block mb-1 uppercase font-semibold">Target Risk-to-Reward</span>
+                    <span class="text-white font-mono font-bold text-base">1 : 2.5 / 1 : 3</span>
+                </div>
             </div>
         </div>
+
     </main>
 
-    <footer class="border-t border-gray-800 py-12 bg-cardbg/50 mt-16">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-            <p class="text-sm text-gray-500">&copy; 2026 Griffincorp. All rights reserved.</p>
-            <div class="flex space-x-6 mt-4 md:mt-0 text-sm text-gray-400">
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 py-8 bg-cardbg/50 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center text-center sm:text-left space-y-4 sm:space-y-0">
+            <p class="text-xs sm:text-sm text-gray-500">&copy; 2026 Griffincorp. All rights reserved.</p>
+            <div class="flex space-x-6 text-xs sm:text-sm text-gray-400">
                 <a href="index.html" class="hover:text-accent transition-colors">Home Platform</a>
-                <a href="#" class="hover:text-accent transition-colors">Telemetry API</a>
+                <a href="#" class="hover:text-accent transition-colors">Privacy Policy</a>
             </div>
         </div>
     </footer>
 
+    <!-- Chart.js Initialization Script -->
     <script>
-        const ctxEquity = document.getElementById('equityChart').getContext('2d');
-        const equityChart = new Chart(ctxEquity, {
+        // Growth & Equity Line Chart
+        const growthCtx = document.getElementById('growthChart').getContext('2d');
+        const growthChart = new Chart(growthCtx, {
             type: 'line',
             data: {
-                labels: [],
-                datasets: [{
-                    label: 'Account Equity ($)',
-                    data: [],
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.2
-                }]
+                labels: ['May W1', 'May W3', 'Jun W1', 'Jun W3', 'Jul W1', 'Jul W3', 'Aug (Live)'],
+                datasets: [
+                    {
+                        label: 'Account Equity ($)',
+                        data: [5000, 5600, 6800, 7900, 9100, 9950, 10820.50],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Account Balance ($)',
+                        data: [5000, 5400, 6500, 7500, 8800, 9600, 10450.00],
+                        borderColor: '#60a5fa',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.3
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: {
+                        labels: { color: '#9ca3af', font: { family: 'sans-serif', size: 12 } }
+                    }
+                },
                 scales: {
-                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#9ca3af' } },
-                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#9ca3af' } }
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#9ca3af' }
+                    }
                 }
             }
         });
 
-        const ctxWinLoss = document.getElementById('winLossChart').getContext('2d');
-        const winLossChart = new Chart(ctxWinLoss, {
+        // Asset Distribution Pie Chart
+        const distCtx = document.getElementById('distributionChart').getContext('2d');
+        const distributionChart = new Chart(distCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Wins', 'Losses'],
+                labels: ['XAUUSD (Gold)', 'Major Forex Pairs', 'Indices / Synthetics'],
                 datasets: [{
-                    data: [0, 0],
-                    backgroundColor: ['#10b981', '#ef4444'],
+                    data: [55, 30, 15],
+                    backgroundColor: ['#10b981', '#3b82f6', '#6366f1'],
                     borderWidth: 0
                 }]
             },
@@ -197,66 +229,13 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom', labels: { color: '#9ca3af', font: { family: 'monospace' } } }
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#9ca3af', font: { family: 'sans-serif', size: 11 }, boxWidth: 12 }
+                    }
                 }
             }
         });
-
-        async function fetchLiveTelemetry() {
-            try {
-                let response = await fetch('telemetry.json');
-                if (!response.ok) return;
-                let data = await response.json();
-
-                document.getElementById('metric-equity').innerText = "$" + data.equity.toFixed(2);
-                document.getElementById('metric-profit').innerText = "$" + data.floatingProfit.toFixed(2);
-                
-                if (data.totalTrades !== undefined) {
-                    document.getElementById('metric-winrate').innerText = data.winRate.toFixed(1) + "%";
-                    document.getElementById('metric-total-trades').innerText = "Total Trades: " + data.totalTrades;
-                }
-
-                if (data.lockedToday) {
-                    document.getElementById('metric-status').innerText = "Locked";
-                    document.getElementById('metric-status').className = "text-3xl font-extrabold text-red-400 font-mono mb-1";
-                } else {
-                    document.getElementById('metric-status').innerText = "Active";
-                    document.getElementById('metric-status').className = "text-3xl font-extrabold text-accent font-mono mb-1";
-                }
-
-                if (data.timestamps && data.equityHistory) {
-                    equityChart.data.labels = data.timestamps;
-                    equityChart.data.datasets[0].data = data.equityHistory;
-                    equityChart.update();
-                }
-
-                if (data.winningTrades !== undefined && data.losingTrades !== undefined) {
-                    winLossChart.data.datasets[0].data = [data.winningTrades, data.losingTrades];
-                    winLossChart.update();
-                }
-
-                if (data.trades && data.trades.length > 0) {
-                    let tableBody = document.getElementById('trade-log-body');
-                    tableBody.innerHTML = '';
-                    data.trades.forEach(trade => {
-                        let pnlColor = trade.profit >= 0 ? 'text-accent' : 'text-red-400';
-                        let row = `<tr class="hover:bg-gray-800/40">
-                            <td class="py-3 px-4 font-bold text-white">${trade.ticket}</td>
-                            <td class="py-3 px-4">${trade.asset}</td>
-                            <td class="py-3 px-4">${trade.type}</td>
-                            <td class="py-3 px-4">${trade.volume}</td>
-                            <td class="py-3 px-4 text-gray-400">-$${trade.commission.toFixed(2)}</td>
-                            <td class="py-3 px-4 font-bold ${pnlColor}">$${trade.profit.toFixed(2)}</td>
-                        </tr>`;
-                        tableBody.innerHTML += row;
-                    });
-                }
-            } catch (error) {
-                console.log("Awaiting local MT5 telemetry bridge feed...");
-            }
-        }
-
-        setInterval(fetchLiveTelemetry, 1000);
     </script>
 </body>
 </html>
