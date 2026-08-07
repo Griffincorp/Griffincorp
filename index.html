@@ -245,7 +245,7 @@
             </div>
         </section>
 
-        <!-- Investor Portal Section with Dynamic USD Pricing -->
+        <!-- Investor Portal Section with Random Investment & NCBA Integration -->
         <section id="portal" class="py-16 sm:py-20 border-t border-gray-800">
             <div class="max-w-4xl mx-auto px-4 sm:px-6">
                 <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
@@ -253,7 +253,7 @@
                         <span>Griffincorp Secured Investor Portal</span>
                     </div>
                     <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3">Investor Project Allocation</h2>
-                    <p class="text-gray-400 text-sm">Select your institutional target and route directly to secured multi-rail payment gateways.</p>
+                    <p class="text-gray-400 text-sm">Select your institutional target or enter a custom amount starting from $2 USD, then route directly to local NCBA & M-Pesa settlement.</p>
                 </div>
 
                 <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 md:p-8 shadow-2xl max-w-xl mx-auto">
@@ -272,7 +272,14 @@
                                 <option value="genesis" data-price="2500" data-currency="USD">Project Genesis (Flagship MQL5 Bot) — $2,500 USD</option>
                                 <option value="protector" data-price="1500" data-currency="USD">Capital Protector Fund Tier — $1,500 USD</option>
                                 <option value="custom" data-price="1000" data-currency="USD">Institutional Portfolio Allocation — $1,000 USD</option>
+                                <option value="random" data-price="2" data-currency="USD">Custom Random Investment (Min $2 USD) — Flexible</option>
                             </select>
+                        </div>
+
+                        <!-- Custom Random Investment Amount Box (Appears only if "random" is selected) -->
+                        <div id="randomAmountBox" class="hidden space-y-2">
+                            <label class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Enter Custom Amount (Min $2 USD)</label>
+                            <input type="number" id="customUsdInput" min="2" step="1" value="10" oninput="updateRandomPrice(this.value)" class="w-full bg-darkbg border border-emerald-500/50 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent font-mono">
                         </div>
                         
                         <!-- Price Display Box -->
@@ -308,7 +315,6 @@
                 history.replaceState(null, null, window.location.pathname);
             }
 
-            // Check if user is already authenticated in this session
             const isAuthorized = sessionStorage.getItem('griffincorp_authorized');
             if (isAuthorized === 'true') {
                 unlockPlatform();
@@ -356,8 +362,6 @@
                 alert('Please enter your email to log in.');
                 return;
             }
-
-            // Authorize session
             sessionStorage.setItem('griffincorp_authorized', 'true');
             sessionStorage.setItem('griffincorp_user', email);
             unlockPlatform();
@@ -378,7 +382,6 @@
                 return;
             }
 
-            // Authorize session & record account creation
             sessionStorage.setItem('griffincorp_authorized', 'true');
             sessionStorage.setItem('griffincorp_user', email);
             sessionStorage.setItem('griffincorp_name', name);
@@ -395,7 +398,7 @@
         }
 
         function checkLiveSignalStream() {
-            const activeTrades = []; // Populated when live trades occur
+            const activeTrades = [];
             const loadingState = document.getElementById('signalLoadingState');
             const activeGrid = document.getElementById('signalActiveGrid');
             const statusText = document.getElementById('feedStatusText');
@@ -414,49 +417,75 @@
         function updateProjectPrice() {
             const select = document.getElementById('invProject');
             const selectedOption = select.options[select.selectedIndex];
-            const price = selectedOption.getAttribute('data-price');
-            const currency = selectedOption.getAttribute('data-currency') || 'USD';
-            
-            const formattedPrice = Number(price).toLocaleString();
-            let symbol = "$";
-            if (currency === "EUR") symbol = "€";
-            else if (currency === "GBP") symbol = "£";
+            const projectKey = select.value;
+            const randomBox = document.getElementById('randomAmountBox');
 
-            document.getElementById('priceDisplay').innerText = `${symbol}${formattedPrice} ${currency}`;
+            if (projectKey === 'random') {
+                randomBox.classList.remove('hidden');
+                const customVal = document.getElementById('customUsdInput').value || 2;
+                updateRandomPrice(customVal);
+            } else {
+                randomBox.classList.add('hidden');
+                const price = selectedOption.getAttribute('data-price');
+                const currency = selectedOption.getAttribute('data-currency') || 'USD';
+                const formattedPrice = Number(price).toLocaleString();
+                document.getElementById('priceDisplay').innerText = `$${formattedPrice} ${currency}`;
+            }
         }
 
+        function updateRandomPrice(val) {
+            let num = Number(val);
+            if (num < 2) num = 2;
+            document.getElementById('priceDisplay').innerText = `$${num.toLocaleString()} USD (Flexible Custom)`;
+        }
+
+        // Multi-Rail Checkout with Active Rail #2 (NCBA & M-Pesa / Paystack)
         function handleInvestorCheckout(event) {
             event.preventDefault();
-            const name = document.getElementById('invName').value;
-            const email = document.getElementById('invEmail').value;
+            const name = document.getElementById('invName').value.trim();
+            const email = document.getElementById('invEmail').value.trim();
             const select = document.getElementById('invProject');
-            const projectName = select.options[select.selectedIndex].text;
             const projectKey = select.value;
-            const price = select.options[select.selectedIndex].getAttribute('data-price');
-            const currency = select.options[select.selectedIndex].getAttribute('data-currency') || 'USD';
+            let projectName = select.options[select.selectedIndex].text;
+            
+            let finalUsd = 2500;
+            if (projectKey === 'protector') finalUsd = 1500;
+            else if (projectKey === 'custom') finalUsd = 1000;
+            else if (projectKey === 'random') {
+                finalUsd = Number(document.getElementById('customUsdInput').value) || 2;
+                if (finalUsd < 2) finalUsd = 2;
+                projectName = `Custom Random Investment ($${finalUsd} USD)`;
+            }
 
-            let symbol = "$";
-            if (currency === "EUR") symbol = "€";
-            else if (currency === "GBP") symbol = "£";
+            // Approximate conversion rate to KES for local NCBA / M-Pesa gateway simulation
+            const approxKes = finalUsd * 130;
 
             const gatewayChoice = prompt(
                 `GRIFFINCORP SECURED CHECKOUT\n` +
                 `Investor: ${name}\n` +
-                `Project: ${projectName}\n` +
-                `Amount: ${symbol}${Number(price).toLocaleString()} ${currency}\n\n` +
+                `Target: ${projectName}\n` +
+                `Amount: $${finalUsd.toLocaleString()} USD (~Ksh ${approxKes.toLocaleString()})\n\n` +
                 `Select Payment Rail:\n` +
-                `1. International Cards (Stripe)\n` +
-                `2. Local & M-Pesa (Paystack)\n` +
-                `3. Cryptocurrency (USDT Gateway)\n\n` +
-                `Type 1, 2, or 3:`
+                `1. International Cards [INACTIVE / Disabled]\n` +
+                `2. Local & M-Pesa [ACTIVE - NCBA & Paystack Gateway]\n` +
+                `3. Cryptocurrency (USDT) [INACTIVE / Disabled]\n\n` +
+                `Type rail number (1, 2, or 3) and press OK:`
             );
 
-            if (gatewayChoice === "1") {
-                alert(`[Stripe Simulation]\nRedirecting ${name} to International Card Gateway.`);
-            } else if (gatewayChoice === "2") {
-                alert(`[Paystack / M-Pesa Simulation]\nRedirecting ${name} to Mobile Money Gateway.`);
-            } else if (gatewayChoice === "3") {
-                alert(`[Crypto Gateway]\nInitializing secure USDT settlement for ${name}.`);
+            if (gatewayChoice === "2") {
+                alert(
+                    `griffincorp.github.io says:\n` +
+                    `Payment Gateway: M-Pesa & NCBA Simulation\n\n` +
+                    `Redirecting ${name} to mobile money and direct NCBA bank settlement gateway for Ksh ${approxKes.toLocaleString()}...`
+                );
+
+                // Direct NCBA & M-Pesa Simulation Redirect / Handler
+                window.location.href = `ncba-checkout.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&project=${projectKey}&amountUSD=${finalUsd}&amountKES=${approxKes}`;
+
+            } else if (gatewayChoice === "1" || gatewayChoice === "3") {
+                alert(`Selected payment rail [${gatewayChoice}] is currently inactive. Please choose option [2] for Local & M-Pesa / NCBA processing.`);
+            } else if (gatewayChoice !== null) {
+                alert("Invalid selection. Please type '2' to use the active Local M-Pesa & NCBA gateway.");
             }
         }
     </script>
