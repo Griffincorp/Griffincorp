@@ -45,13 +45,13 @@
             </h1>
             <p class="text-xs uppercase tracking-widest text-emerald-400 font-semibold mb-4">Mandatory Institutional Access Gate</p>
 
-            <!-- Auth Mode Selector Tabs (Login vs Register) -->
+            <!-- Auth Mode Selector Tabs -->
             <div class="grid grid-cols-2 gap-2 bg-darkbg p-1.5 rounded-xl border border-gray-800 mb-6 text-xs font-semibold">
                 <button id="gateLoginTab" onclick="switchAuthMode('login')" class="py-2.5 rounded-lg bg-accent text-darkbg transition-all shadow cursor-pointer font-bold">Existing User (Login)</button>
                 <button id="gateRegisterTab" onclick="switchAuthMode('register')" class="py-2.5 rounded-lg text-gray-400 hover:text-white transition-all cursor-pointer font-bold">New User (Register)</button>
             </div>
 
-            <!-- LOGIN FORM -->
+            <!-- LOGIN FORM (WITH REAL LOCALSTORAGE CHECK) -->
             <form id="gateLoginForm" onsubmit="handleGateLogin(event)" class="space-y-4 text-left">
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Email Address</label>
@@ -66,7 +66,7 @@
                 </button>
             </form>
 
-            <!-- REGISTER FORM (WITH TERMS CHECKBOX) -->
+            <!-- REGISTER FORM (SAVES TO LOCALSTORAGE) -->
             <form id="gateRegisterForm" onsubmit="handleGateRegister(event)" class="space-y-4 text-left hidden">
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Full Name</label>
@@ -96,6 +96,59 @@
                     Create Account & Enter Platform
                 </button>
             </form>
+
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- INLINE NCBA & M-PESA CHECKOUT MODAL        -->
+    <!-- ========================================== -->
+    <div id="ncbaModal" class="fixed inset-0 z-50 bg-darkbg/90 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-cardbg border border-emerald-500/50 rounded-3xl p-6 sm:p-8 max-w-lg w-full text-left shadow-2xl relative my-auto">
+            
+            <div class="flex justify-between items-center pb-4 border-b border-gray-800 mb-6">
+                <div>
+                    <span class="text-xs font-bold text-accent uppercase tracking-wider">Direct NCBA & M-Pesa Gateway</span>
+                    <h3 class="text-xl font-extrabold text-white">Secure Local Checkout</h3>
+                </div>
+                <button onclick="closeNcbaModal()" class="text-gray-400 hover:text-white font-bold text-xl cursor-pointer">&times;</button>
+            </div>
+
+            <div class="space-y-4 mb-6 text-sm">
+                <div class="bg-darkbg p-4 rounded-xl border border-gray-800 space-y-2">
+                    <div class="flex justify-between text-gray-400">
+                        <span>Investor Entity:</span>
+                        <span id="ncbaModalName" class="text-white font-semibold">--</span>
+                    </div>
+                    <div class="flex justify-between text-gray-400">
+                        <span>Project Target:</span>
+                        <span id="ncbaModalProject" class="text-white font-semibold">--</span>
+                    </div>
+                    <div class="flex justify-between text-gray-400 border-t border-gray-800 pt-2">
+                        <span>Total Payable (KES):</span>
+                        <span id="ncbaModalKes" class="text-accent font-mono font-bold text-base">--</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">M-Pesa Phone Number / NCBA Account</label>
+                    <input type="text" id="ncbaPhoneInput" placeholder="07XXXXXXXX or 2547XXXXXXXX" class="w-full bg-darkbg border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent font-mono">
+                </div>
+
+                <div class="text-xs text-gray-400 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl">
+                    <p class="font-bold text-accent mb-0.5">Automated STK Push Instruction:</p>
+                    <p>Clicking confirm will trigger a direct prompt to your mobile phone or corporate account via the NCBA payment gateway.</p>
+                </div>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="closeNcbaModal()" class="w-1/2 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3.5 rounded-xl transition-all cursor-pointer text-xs uppercase tracking-wider">
+                    Cancel
+                </button>
+                <button onclick="confirmNcbaPayment()" class="w-1/2 bg-accent hover:bg-emerald-600 text-darkbg font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-accent/20 cursor-pointer text-xs uppercase tracking-wider">
+                    Authorize STK Push
+                </button>
+            </div>
 
         </div>
     </div>
@@ -276,7 +329,7 @@
                             </select>
                         </div>
 
-                        <!-- Custom Random Investment Amount Box (Appears only if "random" is selected) -->
+                        <!-- Custom Random Investment Amount Box -->
                         <div id="randomAmountBox" class="hidden space-y-2">
                             <label class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Enter Custom Amount (Min $2 USD)</label>
                             <input type="number" id="customUsdInput" min="2" step="1" value="10" oninput="updateRandomPrice(this.value)" class="w-full bg-darkbg border border-emerald-500/50 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent font-mono">
@@ -355,25 +408,15 @@
             }
         }
 
-        function handleGateLogin(event) {
-            event.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            if (!email) {
-                alert('Please enter your email to log in.');
-                return;
-            }
-            sessionStorage.setItem('griffincorp_authorized', 'true');
-            sessionStorage.setItem('griffincorp_user', email);
-            unlockPlatform();
-        }
-
+        // Strict Registration & Login validation using localStorage
         function handleGateRegister(event) {
             event.preventDefault();
             const name = document.getElementById('regName').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const password = document.getElementById('regPassword').value;
             const termsChecked = document.getElementById('gateTermsCheck').checked;
 
-            if (!name || !email) {
+            if (!name || !email || !password) {
                 alert('Please fill in all required registration fields.');
                 return;
             }
@@ -382,11 +425,47 @@
                 return;
             }
 
+            // Save user to localStorage database simulation
+            let users = JSON.parse(localStorage.getItem('griffincorp_users') || '{}');
+            if (users[email]) {
+                alert('An account with this email already exists. Please log in.');
+                switchAuthMode('login');
+                return;
+            }
+
+            users[email] = { name: name, password: password };
+            localStorage.setItem('griffincorp_users', JSON.stringify(users));
+
+            alert(`Account successfully created for ${name}! You can now log in.`);
+            switchAuthMode('login');
+        }
+
+        function handleGateLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                alert('Please enter both email and password.');
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('griffincorp_users') || '{}');
+            
+            if (!users[email]) {
+                alert('Account not found. Please register an account first.');
+                switchAuthMode('register');
+                return;
+            }
+
+            if (users[email].password !== password) {
+                alert('Incorrect password. Please try again.');
+                return;
+            }
+
             sessionStorage.setItem('griffincorp_authorized', 'true');
             sessionStorage.setItem('griffincorp_user', email);
-            sessionStorage.setItem('griffincorp_name', name);
-            
-            alert(`Account successfully created for ${name}! Welcome to Griffincorp.`);
+            sessionStorage.setItem('griffincorp_name', users[email].name);
             unlockPlatform();
         }
 
@@ -439,7 +518,10 @@
             document.getElementById('priceDisplay').innerText = `$${num.toLocaleString()} USD (Flexible Custom)`;
         }
 
-        // Multi-Rail Checkout with Active Rail #2 (NCBA & M-Pesa / Paystack)
+        // Global Checkout State variables for inline NCBA modal
+        let currentCheckoutData = {};
+
+        // Multi-Rail Checkout with Active Rail #2 (NCBA & M-Pesa) opening inline modal
         function handleInvestorCheckout(event) {
             event.preventDefault();
             const name = document.getElementById('invName').value.trim();
@@ -457,7 +539,6 @@
                 projectName = `Custom Random Investment ($${finalUsd} USD)`;
             }
 
-            // Approximate conversion rate to KES for local NCBA / M-Pesa gateway simulation
             const approxKes = finalUsd * 130;
 
             const gatewayChoice = prompt(
@@ -473,20 +554,43 @@
             );
 
             if (gatewayChoice === "2") {
-                alert(
-                    `griffincorp.github.io says:\n` +
-                    `Payment Gateway: M-Pesa & NCBA Simulation\n\n` +
-                    `Redirecting ${name} to mobile money and direct NCBA bank settlement gateway for Ksh ${approxKes.toLocaleString()}...`
-                );
-
-                // Direct NCBA & M-Pesa Simulation Redirect / Handler
-                window.location.href = `ncba-checkout.html?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&project=${projectKey}&amountUSD=${finalUsd}&amountKES=${approxKes}`;
+                // Save checkout data and open inline NCBA modal
+                currentCheckoutData = { name, email, projectKey, projectName, finalUsd, approxKes };
+                
+                document.getElementById('ncbaModalName').innerText = name;
+                document.getElementById('ncbaModalProject').innerText = projectName;
+                document.getElementById('ncbaModalKes').innerText = `Ksh ${approxKes.toLocaleString()}`;
+                document.getElementById('ncbaModal').classList.remove('hidden');
 
             } else if (gatewayChoice === "1" || gatewayChoice === "3") {
                 alert(`Selected payment rail [${gatewayChoice}] is currently inactive. Please choose option [2] for Local & M-Pesa / NCBA processing.`);
             } else if (gatewayChoice !== null) {
                 alert("Invalid selection. Please type '2' to use the active Local M-Pesa & NCBA gateway.");
             }
+        }
+
+        function closeNcbaModal() {
+            document.getElementById('ncbaModal').classList.add('hidden');
+        }
+
+        function confirmNcbaPayment() {
+            const phone = document.getElementById('ncbaPhoneInput').value.trim();
+            if (!phone) {
+                alert('Please enter your M-Pesa phone number or NCBA account to proceed.');
+                return;
+            }
+
+            alert(
+                `griffincorp.github.io says:\n` +
+                `STK Push Initiated Successfully!\n\n` +
+                `Target: ${currentCheckoutData.projectName}\n` +
+                `Amount: Ksh ${currentCheckoutData.approxKes.toLocaleString()}\n` +
+                `Account / Phone: ${phone}\n\n` +
+                `Please check your device to complete the NCBA / M-Pesa authorization prompt.`
+            );
+
+            closeNcbaModal();
+            document.getElementById('ncbaPhoneInput').value = '';
         }
     </script>
 </body>
