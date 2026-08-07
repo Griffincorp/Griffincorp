@@ -51,7 +51,7 @@
                 <button id="gateRegisterTab" onclick="switchAuthMode('register')" class="py-2.5 rounded-lg text-gray-400 hover:text-white transition-all cursor-pointer font-bold">New User (Register)</button>
             </div>
 
-            <!-- LOGIN FORM (WITH REAL LOCALSTORAGE CHECK) -->
+            <!-- LOGIN FORM -->
             <form id="gateLoginForm" onsubmit="handleGateLogin(event)" class="space-y-4 text-left">
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Email Address</label>
@@ -66,7 +66,7 @@
                 </button>
             </form>
 
-            <!-- REGISTER FORM (SAVES TO LOCALSTORAGE) -->
+            <!-- REGISTER FORM -->
             <form id="gateRegisterForm" onsubmit="handleGateRegister(event)" class="space-y-4 text-left hidden">
                 <div>
                     <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Full Name</label>
@@ -81,7 +81,6 @@
                     <input type="password" id="regPassword" required placeholder="Create a secure password" class="w-full bg-darkbg border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent">
                 </div>
 
-                <!-- Terms & Conditions Box -->
                 <div class="bg-darkbg border border-gray-800 rounded-xl p-3 text-xs text-gray-400 space-y-1 max-h-28 overflow-y-auto">
                     <p class="font-bold text-white uppercase">Griffincorp Risk & Compliance Waiver</p>
                     <p>Automated trading bots execute orders independently via MetaTrader 5 MQL5 scripts. Past backtest performance does not guarantee live market returns. All capital risk rests with the account holder.</p>
@@ -137,7 +136,7 @@
 
                 <div class="text-xs text-gray-400 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl">
                     <p class="font-bold text-accent mb-0.5">Automated STK Push Instruction:</p>
-                    <p>Clicking confirm will trigger a direct prompt to your mobile phone or corporate account via the NCBA payment gateway.</p>
+                    <p>Clicking authorize will trigger a direct prompt to your mobile phone or corporate account via the NCBA payment gateway.</p>
                 </div>
             </div>
 
@@ -228,9 +227,7 @@
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- LIVE TRADE COPY STREAM (DYNAMIC FEED)    -->
-        <!-- ========================================== -->
+        <!-- Live Trade Copy Stream -->
         <section id="signalStream" class="py-16 sm:py-20 bg-cardbg/20 border-t border-gray-800">
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10">
@@ -247,7 +244,6 @@
                     </div>
                 </div>
 
-                <!-- Signal Feed Container -->
                 <div id="signalContainer">
                     <div id="signalLoadingState" class="bg-cardbg border border-gray-800 rounded-2xl p-12 text-center shadow-xl">
                         <div class="inline-block w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -298,7 +294,7 @@
             </div>
         </section>
 
-        <!-- Investor Portal Section with Random Investment & NCBA Integration -->
+        <!-- Investor Portal Section -->
         <section id="portal" class="py-16 sm:py-20 border-t border-gray-800">
             <div class="max-w-4xl mx-auto px-4 sm:px-6">
                 <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
@@ -310,7 +306,7 @@
                 </div>
 
                 <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 md:p-8 shadow-2xl max-w-xl mx-auto">
-                    <form id="investorForm" class="space-y-4" onsubmit="handleInvestorCheckout(event)">
+                    <form id="investorForm" class="space-y-4" onsubmit="handle InvestorCheckout(event)">
                         <div>
                             <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Investor / Entity Name</label>
                             <input type="text" id="invName" required placeholder="Enter investor name" class="w-full bg-darkbg border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent">
@@ -342,7 +338,7 @@
                         </div>
 
                         <button type="submit" class="w-full bg-accent hover:bg-emerald-600 text-darkbg font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-accent/20 mt-2 cursor-pointer">
-                            Proceed to Secure Multi-Rail Checkout &rarr;
+                            Proceed to Secure NCBA & M-Pesa Gateway &rarr;
                         </button>
                     </form>
                 </div>
@@ -408,7 +404,6 @@
             }
         }
 
-        // Strict Registration & Login validation using localStorage
         function handleGateRegister(event) {
             event.preventDefault();
             const name = document.getElementById('regName').value.trim();
@@ -425,7 +420,6 @@
                 return;
             }
 
-            // Save user to localStorage database simulation
             let users = JSON.parse(localStorage.getItem('griffincorp_users') || '{}');
             if (users[email]) {
                 alert('An account with this email already exists. Please log in.');
@@ -518,10 +512,9 @@
             document.getElementById('priceDisplay').innerText = `$${num.toLocaleString()} USD (Flexible Custom)`;
         }
 
-        // Global Checkout State variables for inline NCBA modal
         let currentCheckoutData = {};
 
-        // Multi-Rail Checkout with Active Rail #2 (NCBA & M-Pesa) opening inline modal
+        // DIRECT CHECKOUT: Opens NCBA Modal Instantly Without Prompts or Redirects
         function handleInvestorCheckout(event) {
             event.preventDefault();
             const name = document.getElementById('invName').value.trim();
@@ -541,32 +534,13 @@
 
             const approxKes = finalUsd * 130;
 
-            const gatewayChoice = prompt(
-                `GRIFFINCORP SECURED CHECKOUT\n` +
-                `Investor: ${name}\n` +
-                `Target: ${projectName}\n` +
-                `Amount: $${finalUsd.toLocaleString()} USD (~Ksh ${approxKes.toLocaleString()})\n\n` +
-                `Select Payment Rail:\n` +
-                `1. International Cards [INACTIVE / Disabled]\n` +
-                `2. Local & M-Pesa [ACTIVE - NCBA & Paystack Gateway]\n` +
-                `3. Cryptocurrency (USDT) [INACTIVE / Disabled]\n\n` +
-                `Type rail number (1, 2, or 3) and press OK:`
-            );
-
-            if (gatewayChoice === "2") {
-                // Save checkout data and open inline NCBA modal
-                currentCheckoutData = { name, email, projectKey, projectName, finalUsd, approxKes };
-                
-                document.getElementById('ncbaModalName').innerText = name;
-                document.getElementById('ncbaModalProject').innerText = projectName;
-                document.getElementById('ncbaModalKes').innerText = `Ksh ${approxKes.toLocaleString()}`;
-                document.getElementById('ncbaModal').classList.remove('hidden');
-
-            } else if (gatewayChoice === "1" || gatewayChoice === "3") {
-                alert(`Selected payment rail [${gatewayChoice}] is currently inactive. Please choose option [2] for Local & M-Pesa / NCBA processing.`);
-            } else if (gatewayChoice !== null) {
-                alert("Invalid selection. Please type '2' to use the active Local M-Pesa & NCBA gateway.");
-            }
+            // Store details and open the secure NCBA modal instantly on screen
+            currentCheckoutData = { name, email, projectKey, projectName, finalUsd, approxKes };
+            
+            document.getElementById('ncbaModalName').innerText = name;
+            document.getElementById('ncbaModalProject').innerText = projectName;
+            document.getElementById('ncbaModalKes').innerText = `Ksh ${approxKes.toLocaleString()}`;
+            document.getElementById('ncbaModal').classList.remove('hidden');
         }
 
         function closeNcbaModal() {
@@ -581,7 +555,6 @@
             }
 
             alert(
-                `griffincorp.github.io says:\n` +
                 `STK Push Initiated Successfully!\n\n` +
                 `Target: ${currentCheckoutData.projectName}\n` +
                 `Amount: Ksh ${currentCheckoutData.approxKes.toLocaleString()}\n` +
