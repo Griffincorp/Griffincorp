@@ -306,7 +306,7 @@
                 </div>
 
                 <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 md:p-8 shadow-2xl max-w-xl mx-auto">
-                    <form id="investorForm" class="space-y-4" onsubmit="handle InvestorCheckout(event)">
+                    <form id="investorForm" class="space-y-4" onsubmit="handleInvestorCheckout(event)">
                         <div>
                             <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Investor / Entity Name</label>
                             <input type="text" id="invName" required placeholder="Enter investor name" class="w-full bg-darkbg border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent">
@@ -514,7 +514,6 @@
 
         let currentCheckoutData = {};
 
-        // DIRECT CHECKOUT: Opens NCBA Modal Instantly Without Prompts or Redirects
         function handleInvestorCheckout(event) {
             event.preventDefault();
             const name = document.getElementById('invName').value.trim();
@@ -534,7 +533,6 @@
 
             const approxKes = finalUsd * 130;
 
-            // Store details and open the secure NCBA modal instantly on screen
             currentCheckoutData = { name, email, projectKey, projectName, finalUsd, approxKes };
             
             document.getElementById('ncbaModalName').innerText = name;
